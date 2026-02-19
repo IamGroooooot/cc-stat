@@ -15,9 +15,10 @@ Claude가 자동으로 statusline을 설치해줍니다.
 
 ### statusline.sh 내용:
 
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
+emulate -L zsh
 input=$(cat)
-readarray -t f <<< "$(echo "$input" | jq -r '
+f=("${(@f)$(echo "$input" | jq -r '
   (.model.display_name // ""),
   (.context_window.used_percentage // 0 | tostring),
   (.cost.total_cost_usd // 0 | tostring),
@@ -30,12 +31,12 @@ readarray -t f <<< "$(echo "$input" | jq -r '
   (.context_window.total_input_tokens // 0 | tostring),
   (.context_window.total_output_tokens // 0 | tostring),
   (.exceeds_200k_tokens // false | tostring)
-')"
-MODEL="${f[0]}" USED_PCT="${f[1]}" COST="${f[2]}"
-DURATION_MS="${f[3]}" API_DURATION_MS="${f[4]}"
-LINES_ADD="${f[5]}" LINES_DEL="${f[6]}" AGENT="${f[7]}"
-CTX_SIZE="${f[8]}" TOTAL_IN="${f[9]}" TOTAL_OUT="${f[10]}"
-EXCEEDS_200K="${f[11]}"
+')}")
+MODEL="${f[1]}" USED_PCT="${f[2]}" COST="${f[3]}"
+DURATION_MS="${f[4]}" API_DURATION_MS="${f[5]}"
+LINES_ADD="${f[6]}" LINES_DEL="${f[7]}" AGENT="${f[8]}"
+CTX_SIZE="${f[9]}" TOTAL_IN="${f[10]}" TOTAL_OUT="${f[11]}"
+EXCEEDS_200K="${f[12]}"
 RST=$'\033[0m'
 CLR_WARN=$'\033[38;5;222m' CLR_HIGH=$'\033[38;5;209m' CLR_CRIT=$'\033[38;5;174m'
 gauge_clr=""
@@ -43,7 +44,7 @@ if [[ "$EXCEEDS_200K" == "true" ]]; then gauge_clr="$CLR_CRIT"
 elif (( USED_PCT >= 80 )); then gauge_clr="$CLR_HIGH"
 elif (( USED_PCT >= 60 )); then gauge_clr="$CLR_WARN"; fi
 gauges=("▱▱▱▱▱" "▰▱▱▱▱" "▰▰▱▱▱" "▰▰▰▱▱" "▰▰▰▰▱" "▰▰▰▰▰")
-idx=$(( USED_PCT * 5 / 100 )); (( idx > 5 )) && idx=5; (( idx < 0 )) && idx=0
+idx=$(( USED_PCT * 5 / 100 )); (( idx > 5 )) && idx=5; (( idx < 0 )) && idx=0; (( idx += 1 ))
 if (( CTX_SIZE >= 1000000 )); then ctx_label="1M"; else ctx_label="200K"; fi
 total_tok=$(( TOTAL_IN + TOTAL_OUT ))
 tok_str=$(awk -v t="$total_tok" 'BEGIN { if (t>=1000000) printf "%.1fM",t/1000000; else if (t>=1000) printf "%.1fK",t/1000; else printf "%d",t }')
@@ -62,7 +63,7 @@ echo "$out"
 
 "statusLine": {
   "type": "command",
-  "command": "~/.claude/statusline.sh 경로를 절대경로로",
+  "command": "$HOME/.claude/statusline.sh 를 절대경로로 변환해서 넣어줘",
   "padding": 0
 }
 
@@ -79,7 +80,7 @@ Install a custom statusline for my Claude Code.
 Save the script below as ~/.claude/statusline.sh, make it executable,
 and add the statusLine config to ~/.claude/settings.json (preserve existing settings).
 
-[paste the same script from above]
+[paste the same script from the Korean prompt above]
 
 The settings.json needs this entry:
 "statusLine": {

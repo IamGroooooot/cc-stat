@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
+emulate -L zsh
 set -euo pipefail
 
 # cc-stat uninstaller
@@ -16,13 +17,11 @@ done
 SETTINGS="$CONFIG_DIR/settings.json"
 SCRIPT="$CONFIG_DIR/statusline.sh"
 
-# Remove script file
 if [[ -f "$SCRIPT" ]]; then
   rm "$SCRIPT"
   echo "Removed: $SCRIPT"
 fi
 
-# Remove statusLine key from settings.json
 if [[ -f "$SETTINGS" ]]; then
   UPDATED=$(jq 'del(.statusLine)' "$SETTINGS")
   echo "$UPDATED" > "$SETTINGS"

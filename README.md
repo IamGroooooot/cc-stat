@@ -27,6 +27,7 @@ Colors change as context fills up:
 
 ## Requirements
 
+- **zsh**
 - **jq** (JSON processor)
 - **Claude Code** with statusLine support
 - A **Nerd Font** terminal for icons (optional, works without but icons won't render)
@@ -35,31 +36,26 @@ Colors change as context fills up:
 
 ### Option 1: Script
 
-```bash
-git clone https://github.com/user/cc-stat.git
+```zsh
 cd cc-stat
 ./install.sh
 ```
 
 Or with a custom config directory:
 
-```bash
+```zsh
 ./install.sh --config-dir ~/.my-claude-config
 ```
 
-### Option 2: One-liner
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/user/cc-stat/main/install.sh | bash
-```
-
-### Option 3: Ask Claude Code
+### Option 2: Ask Claude Code
 
 Open Claude Code and paste the prompt from [PROMPT.md](./PROMPT.md).
+Claude will install it for you automatically.
 
 ## Uninstall
 
-```bash
+```zsh
+cd cc-stat
 ./uninstall.sh
 # or with custom config dir:
 ./uninstall.sh --config-dir ~/.my-claude-config

@@ -1,13 +1,14 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # cc-stat: Claude Code custom statusline
-# https://github.com/user/cc-stat
 #
 # Reads session JSON from stdin, outputs formatted status bar.
 # Fields: model, context gauge, tokens, cost, duration, lines changed
 
+emulate -L zsh
+
 input=$(cat)
 
-readarray -t f <<< "$(echo "$input" | jq -r '
+f=("${(@f)$(echo "$input" | jq -r '
   (.model.display_name // ""),
   (.context_window.used_percentage // 0 | tostring),
   (.cost.total_cost_usd // 0 | tostring),
@@ -20,19 +21,19 @@ readarray -t f <<< "$(echo "$input" | jq -r '
   (.context_window.total_input_tokens // 0 | tostring),
   (.context_window.total_output_tokens // 0 | tostring),
   (.exceeds_200k_tokens // false | tostring)
-')"
-MODEL="${f[0]}"
-USED_PCT="${f[1]}"
-COST="${f[2]}"
-DURATION_MS="${f[3]}"
-API_DURATION_MS="${f[4]}"
-LINES_ADD="${f[5]}"
-LINES_DEL="${f[6]}"
-AGENT="${f[7]}"
-CTX_SIZE="${f[8]}"
-TOTAL_IN="${f[9]}"
-TOTAL_OUT="${f[10]}"
-EXCEEDS_200K="${f[11]}"
+')}")
+MODEL="${f[1]}"
+USED_PCT="${f[2]}"
+COST="${f[3]}"
+DURATION_MS="${f[4]}"
+API_DURATION_MS="${f[5]}"
+LINES_ADD="${f[6]}"
+LINES_DEL="${f[7]}"
+AGENT="${f[8]}"
+CTX_SIZE="${f[9]}"
+TOTAL_IN="${f[10]}"
+TOTAL_OUT="${f[11]}"
+EXCEEDS_200K="${f[12]}"
 
 # ANSI colors for context gauge
 RST=$'\033[0m'
@@ -54,6 +55,8 @@ gauges=("▱▱▱▱▱" "▰▱▱▱▱" "▰▰▱▱▱" "▰▰▰▱▱" 
 idx=$(( USED_PCT * 5 / 100 ))
 (( idx > 5 )) && idx=5
 (( idx < 0 )) && idx=0
+# zsh arrays are 1-based
+(( idx += 1 ))
 
 # Context window label
 if (( CTX_SIZE >= 1000000 )); then

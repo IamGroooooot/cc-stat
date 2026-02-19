@@ -1,16 +1,15 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
+emulate -L zsh
 set -euo pipefail
 
 # cc-stat installer
 # Installs the custom statusline for Claude Code
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/user/cc-stat/main/install.sh | bash
-#   # or
 #   ./install.sh
 #   ./install.sh --config-dir ~/.my-claude   # custom config dir
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="${0:a:h}"
 
 # ---------------------------------------------------------------------------
 # Parse arguments
@@ -49,21 +48,19 @@ if ! command -v claude &>/dev/null; then
   echo "Warning: 'claude' command not found. Is Claude Code installed?"
 fi
 
+if [[ ! -f "$SCRIPT_DIR/statusline.sh" ]]; then
+  echo "Error: statusline.sh not found in $SCRIPT_DIR"
+  echo "Run this script from the cc-stat directory."
+  exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Install statusline script
 # ---------------------------------------------------------------------------
 mkdir -p "$CONFIG_DIR"
 
 DEST="$CONFIG_DIR/statusline.sh"
-
-# If running from repo clone, copy from local; otherwise download
-if [[ -f "$SCRIPT_DIR/statusline.sh" ]]; then
-  cp "$SCRIPT_DIR/statusline.sh" "$DEST"
-else
-  echo "Downloading statusline.sh..."
-  curl -fsSL "https://raw.githubusercontent.com/user/cc-stat/main/statusline.sh" -o "$DEST"
-fi
-
+cp "$SCRIPT_DIR/statusline.sh" "$DEST"
 chmod +x "$DEST"
 
 # ---------------------------------------------------------------------------
@@ -71,7 +68,6 @@ chmod +x "$DEST"
 # ---------------------------------------------------------------------------
 SETTINGS="$CONFIG_DIR/settings.json"
 
-# statusLine config to inject
 SL_JSON=$(cat <<EOJSON
 {
   "statusLine": {
@@ -84,8 +80,8 @@ EOJSON
 )
 
 if [[ -f "$SETTINGS" ]]; then
-  # Merge: existing settings + statusLine (statusLine wins on conflict)
-  MERGED=$(jq -s '.[0] * .[1]' "$SETTINGS" <(echo "$SL_JSON"))
+  # pipe instead of process substitution for broader compatibility
+  MERGED=$(echo "$SL_JSON" | jq -s '.[0] * .[1]' "$SETTINGS" -)
   echo "$MERGED" > "$SETTINGS"
 else
   echo "$SL_JSON" | jq '.' > "$SETTINGS"
