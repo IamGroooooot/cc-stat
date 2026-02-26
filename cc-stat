@@ -1,0 +1,58 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+usage() {
+  cat <<'USAGE'
+cc-stat CLI
+
+Usage:
+  ./cc-stat <command> [options]
+
+Commands:
+  install            Install/update statusline
+  uninstall          Remove statusline setup
+  doctor             Validate current setup
+  install-github     Install from GitHub without cloning first
+  help               Show this help
+
+Examples:
+  ./cc-stat install
+  ./cc-stat doctor --config-dir ~/.claude
+  ./cc-stat install-github --repo your-org/cc-stat --ref v1.2.3
+USAGE
+}
+
+if [ "$#" -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+command=$1
+shift
+
+case "$command" in
+  install)
+    exec "$SCRIPT_DIR/install.sh" "$@"
+    ;;
+  uninstall)
+    exec "$SCRIPT_DIR/uninstall.sh" "$@"
+    ;;
+  doctor)
+    exec "$SCRIPT_DIR/doctor.sh" "$@"
+    ;;
+  install-github)
+    exec "$SCRIPT_DIR/install-from-github.sh" "$@"
+    ;;
+  help|-h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    printf 'Error: Unknown command: %s\n' "$command" >&2
+    printf "Run '%s help' for usage.\n" "$SCRIPT_NAME" >&2
+    exit 2
+    ;;
+esac

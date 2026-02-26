@@ -1,100 +1,128 @@
 # cc-stat
 
-Claude Code custom statusline that shows model, context usage, tokens, cost, duration, and lines changed at a glance.
+Claude Code statusline for model/context/tokens/cost/duration/line-diff at a glance.
 
-```
+```text
 󰯉 Claude 4 Opus ▰▰▱▱▱ 42%/200K 85.3K $0.47 ⏱ 3m12s(󰒍 1m45s) +120/-34
 ```
 
-## What it shows
+## Quick Start (Local Clone)
+
+```sh
+cd cc-stat
+./cc-stat install
+./cc-stat doctor
+```
+
+## Quick Start (GitHub-Based, no clone required)
+
+1) Download installer script
+
+```sh
+curl -fsSL -o /tmp/cc-stat-install.sh \
+  https://raw.githubusercontent.com/<OWNER>/<REPO>/main/install-from-github.sh
+```
+
+2) Run installer
+
+```sh
+sh /tmp/cc-stat-install.sh --repo <OWNER>/<REPO>
+```
+
+Recommended for reproducibility:
+- Pin with `--ref <tag-or-commit>` instead of floating refs.
+
+Example:
+
+```sh
+sh /tmp/cc-stat-install.sh --repo <OWNER>/<REPO> --ref v1.2.3
+```
+
+## Commands
+
+All commands are available via `./cc-stat`:
+
+```sh
+./cc-stat install
+./cc-stat uninstall
+./cc-stat doctor
+./cc-stat install-github --repo <OWNER>/<REPO>
+```
+
+You can still run scripts directly:
+- `./install.sh`
+- `./uninstall.sh`
+- `./doctor.sh`
+- `./install-from-github.sh`
+
+## Requirements
+
+- `jq` (required)
+- Claude Code
+- Nerd Font terminal (optional, icons only)
+
+## Install Options
+
+```sh
+./cc-stat install --help
+```
+
+Common options:
+- `--config-dir DIR`: target config directory (default: `$CLAUDE_CONFIG_DIR` or `~/.claude`)
+- `--script-name NAME`: installed filename (default: `statusline.sh`)
+- `--source-script FILE`: custom source statusline script
+- `--force`: overwrite existing installed script
+- `--dry-run`: preview actions only
+
+## Uninstall
+
+```sh
+./cc-stat uninstall
+```
+
+If `statusLine.command` points to another script and you still want to remove the key:
+
+```sh
+./cc-stat uninstall --all-statusline
+```
+
+## Doctor
+
+```sh
+./cc-stat doctor
+```
+
+Checks:
+- required dependencies
+- installed script presence/executable bit
+- `settings.json` JSON validity
+- `statusLine.command` wiring
+
+## What It Shows
 
 | Field | Description |
 |-------|-------------|
 | 󰯉 Model | Current model name |
-| 󱚣 Agent | Agent name (when using agent teams) |
-| ▰▰▱▱▱ | Context window gauge (5 blocks) |
-| 42%/200K | Context used % / window size |
-| 85.3K | Total tokens (input + output) |
-| $0.47 | Session cost |
-| ⏱ 3m12s | Total duration |
-| 󰒍 1m45s | API duration |
-| +120/-34 | Lines added/removed |
+| 󱚣 Agent | Agent name (if using teams) |
+| ▰▰▱▱▱ | Context usage gauge |
+| `42%/200K` | Used context / context window size |
+| `85.3K` | Total tokens (input + output) |
+| `$0.47` | Session cost |
+| `⏱ 3m12s(󰒍 1m45s)` | Total/API duration |
+| `+120/-34` | Lines added/removed |
 
-Colors change as context fills up:
-- **60-79%** — pastel yellow
-- **80-99%** — pastel salmon
-- **200K+ overflow** — pastel pink
+Color thresholds:
+- warn: `60%+`
+- high: `80%+`
+- critical: `exceeds_200k_tokens=true`
 
-## Requirements
-
-- **zsh**
-- **jq** (JSON processor)
-- **Claude Code** with statusLine support
-- A **Nerd Font** terminal for icons (optional, works without but icons won't render)
-
-## Install
-
-### Option 1: Script
-
-```zsh
-cd cc-stat
-./install.sh
-```
-
-Or with a custom config directory:
-
-```zsh
-./install.sh --config-dir ~/.my-claude-config
-```
-
-### Option 2: Ask Claude Code
-
-Open Claude Code and paste the prompt from [PROMPT.md](./PROMPT.md).
-Claude will install it for you automatically.
-
-## Uninstall
-
-```zsh
-cd cc-stat
-./uninstall.sh
-# or with custom config dir:
-./uninstall.sh --config-dir ~/.my-claude-config
-```
-
-## How it works
-
-Claude Code's `statusLine` setting runs a command and pipes session JSON to stdin on every render tick. The script parses the JSON with `jq`, formats the fields, and outputs a single line with ANSI colors.
-
-The session JSON includes fields like:
-
-```json
-{
-  "model": { "display_name": "Claude 4 Opus" },
-  "context_window": {
-    "used_percentage": 42,
-    "context_window_size": 200000,
-    "total_input_tokens": 70000,
-    "total_output_tokens": 15000
-  },
-  "cost": {
-    "total_cost_usd": 0.47,
-    "total_duration_ms": 192000,
-    "total_api_duration_ms": 105000,
-    "total_lines_added": 120,
-    "total_lines_removed": 34
-  },
-  "agent": { "name": "researcher" },
-  "exceeds_200k_tokens": false
-}
-```
+You can override thresholds:
+- `CC_STAT_WARN_PCT` (default `60`)
+- `CC_STAT_HIGH_PCT` (default `80`)
 
 ## Customization
 
-Edit `~/.claude/statusline.sh` to change:
-- **Icons** — replace Nerd Font glyphs with emoji or text
-- **Colors** — change `CLR_WARN`, `CLR_HIGH`, `CLR_CRIT` ANSI codes
-- **Thresholds** — adjust the 60%/80% boundaries
-- **Fields** — add/remove/reorder output sections
+Edit installed script (default `~/.claude/statusline.sh`) to customize icons/colors/field order.
 
 ## License
 
