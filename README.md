@@ -1,12 +1,14 @@
 # cc-stat
 
-Claude Code statusline for model/context/tokens/cost/duration/line-diff at a glance.
+Claude Code statusline을 한 줄로 보기 좋게 보여주는 스크립트입니다.
 
 ```text
 󰯉 Claude 4 Opus ▰▰▱▱▱ 42%/200K 85.3K $0.47 ⏱ 3m12s(󰒍 1m45s) +120/-34
 ```
 
-## Quick Start (Local Clone)
+## 30초 설치
+
+### 1) 이미 레포를 클론한 경우
 
 ```sh
 cd cc-stat
@@ -14,115 +16,115 @@ cd cc-stat
 ./cc-stat doctor
 ```
 
-## Quick Start (GitHub-Based, no clone required)
-
-1) Download installer script
+### 2) 클론 없이 GitHub에서 바로 설치
 
 ```sh
 curl -fsSL -o /tmp/cc-stat-install.sh \
-  https://raw.githubusercontent.com/<OWNER>/<REPO>/main/install-from-github.sh
+  https://raw.githubusercontent.com/IamGroooooot/cc-stat/main/install-from-github.sh
+sh /tmp/cc-stat-install.sh --repo IamGroooooot/cc-stat
 ```
 
-2) Run installer
+버전 고정(권장):
 
 ```sh
-sh /tmp/cc-stat-install.sh --repo <OWNER>/<REPO>
+sh /tmp/cc-stat-install.sh --repo IamGroooooot/cc-stat --ref v1.2.3
 ```
 
-Recommended for reproducibility:
-- Pin with `--ref <tag-or-commit>` instead of floating refs.
+## 기본 사용
 
-Example:
+설치:
 
 ```sh
-sh /tmp/cc-stat-install.sh --repo <OWNER>/<REPO> --ref v1.2.3
+./cc-stat install
 ```
 
-## Commands
+상태 점검:
 
-All commands are available via `./cc-stat`:
+```sh
+./cc-stat doctor
+```
+
+삭제:
+
+```sh
+./cc-stat uninstall
+```
+
+## 명령어 요약
 
 ```sh
 ./cc-stat install
 ./cc-stat uninstall
 ./cc-stat doctor
-./cc-stat install-github --repo <OWNER>/<REPO>
+./cc-stat install-github --repo IamGroooooot/cc-stat
 ```
 
-You can still run scripts directly:
+직접 스크립트를 실행해도 됩니다:
 - `./install.sh`
 - `./uninstall.sh`
 - `./doctor.sh`
 - `./install-from-github.sh`
 
-## Requirements
+## 요구사항
 
-- `jq` (required)
+- `jq` (필수)
 - Claude Code
-- Nerd Font terminal (optional, icons only)
+- Nerd Font 터미널 (선택, 아이콘 표시용)
 
-## Install Options
+`jq`가 없으면:
+
+```sh
+# macOS
+brew install jq
+
+# Ubuntu/Debian
+sudo apt install jq
+```
+
+## 표시 정보
+
+| 항목 | 의미 |
+|---|---|
+| 󰯉 Model | 현재 모델 |
+| 󱚣 Agent | 에이전트 이름(팀 사용 시) |
+| ▰▰▱▱▱ | 컨텍스트 사용량 게이지 |
+| `42%/200K` | 사용률 / 컨텍스트 크기 |
+| `85.3K` | 총 토큰(input + output) |
+| `$0.47` | 누적 비용 |
+| `⏱ 3m12s(󰒍 1m45s)` | 전체/API 소요 시간 |
+| `+120/-34` | 추가/삭제 라인 수 |
+
+색상 임계값:
+- 경고: `60%+`
+- 높음: `80%+`
+- 치명: `exceeds_200k_tokens=true`
+
+환경변수로 조정 가능:
+- `CC_STAT_WARN_PCT` (기본 `60`)
+- `CC_STAT_HIGH_PCT` (기본 `80`)
+
+## 자주 쓰는 옵션
 
 ```sh
 ./cc-stat install --help
 ```
 
-Common options:
-- `--config-dir DIR`: target config directory (default: `$CLAUDE_CONFIG_DIR` or `~/.claude`)
-- `--script-name NAME`: installed filename (default: `statusline.sh`)
-- `--source-script FILE`: custom source statusline script
-- `--force`: overwrite existing installed script
-- `--dry-run`: preview actions only
+주요 옵션:
+- `--config-dir DIR`: Claude 설정 디렉터리 (기본: `$CLAUDE_CONFIG_DIR` 또는 `~/.claude`)
+- `--script-name NAME`: 설치될 파일명 (기본: `statusline.sh`)
+- `--source-script FILE`: 커스텀 statusline 소스 경로
+- `--force`: 기존 스크립트 덮어쓰기
+- `--dry-run`: 실제 변경 없이 미리보기
 
-## Uninstall
-
-```sh
-./cc-stat uninstall
-```
-
-If `statusLine.command` points to another script and you still want to remove the key:
+`statusLine.command`가 다른 파일을 가리켜도 강제로 제거하려면:
 
 ```sh
 ./cc-stat uninstall --all-statusline
 ```
 
-## Doctor
+## 커스터마이징
 
-```sh
-./cc-stat doctor
-```
-
-Checks:
-- required dependencies
-- installed script presence/executable bit
-- `settings.json` JSON validity
-- `statusLine.command` wiring
-
-## What It Shows
-
-| Field | Description |
-|-------|-------------|
-| 󰯉 Model | Current model name |
-| 󱚣 Agent | Agent name (if using teams) |
-| ▰▰▱▱▱ | Context usage gauge |
-| `42%/200K` | Used context / context window size |
-| `85.3K` | Total tokens (input + output) |
-| `$0.47` | Session cost |
-| `⏱ 3m12s(󰒍 1m45s)` | Total/API duration |
-| `+120/-34` | Lines added/removed |
-
-Color thresholds:
-- warn: `60%+`
-- high: `80%+`
-- critical: `exceeds_200k_tokens=true`
-
-You can override thresholds:
-- `CC_STAT_WARN_PCT` (default `60`)
-- `CC_STAT_HIGH_PCT` (default `80`)
-
-## Customization
-
-Edit installed script (default `~/.claude/statusline.sh`) to customize icons/colors/field order.
+설치된 스크립트(기본: `~/.claude/statusline.sh`)를 수정하면 아이콘/색상/필드 순서를 바꿀 수 있습니다.
 
 ## License
 
