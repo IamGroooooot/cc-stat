@@ -79,7 +79,8 @@ cost_str=$(awk -v c="$COST" 'BEGIN { if (c >= 0.1) printf "$%.2f", c; else print
 # Duration formatter
 fmt_dur() {
   local s=$(( $1 / 1000 ))
-  local m=$(( s / 60 )) sec=$(( s % 60 ))
+  local m=$(( s / 60 ))
+  local sec=$(( s % 60 ))
   (( m > 0 )) && echo "${m}m${sec}s" || echo "${sec}s"
 }
 dur=$(fmt_dur "$DURATION_MS")
